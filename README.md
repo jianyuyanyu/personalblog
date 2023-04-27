@@ -11,7 +11,7 @@
 
 # 配套后台管理系统
 
-[PersonalblogVue: 基于Vue3框架搭建的个人博客后台管理系统。 (github.com)](https://github.com/ZyPLJ/PersonalblogVue)
+[PersonalblogVue: 基于Vue3框架搭建的个人博客后台管理系统。 (gitee.com)](https://gitee.com/zyplj/personalblog-vue)
 
 # 项目截图
 
@@ -26,9 +26,7 @@
 
 # 生成数据库
 
-本项目采用的sqlite3数据库
-
-## 命令行生成
+## 方法一 命令行生成
 
 你需要修改数据库连接字符串，在本项目的Personalblog.Model中，找到MyDbContextDesignFac类。
 MyDbContextDesignFac是用来创建数据库，修改该类其中的connStr即可， **然后在主项目的Program.cs中配置连接字符串** 。
@@ -41,12 +39,11 @@ Add-Migration Init(随便起名) //等待类文件的创建，创建成功后就
 Update-Database //输入这个成功后就可以看到mysql数据库已经成功创建了。
 ```
 
-或者在使用终端在Personalblog.Model中输入上述代码。
-注意：如果app.db文件在Personalblog.Model中，可以移入Personalblog即可
+## 方法二 Sql文件生成
 
-## 自带app.db数据库
+请下载：[Sql文件](http://47.113.150.96:4608/UpLoad/DownloadFile?filepath=%2Fwwwroot%2FUploadFolder%2FPersonalblog.sql)
 
-项目Personalblog自带数据库，可无需生成
+本项目根目录已经包含该sql文件
 
 # 项目打包
 
