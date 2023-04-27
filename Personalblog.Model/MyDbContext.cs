@@ -22,6 +22,9 @@ namespace Personalblog.Model
         public DbSet<User> users { get; set; }
         public DbSet<VisitRecord> visitRecords { get; set; }
         public DbSet<ConfigItem> configItems { get; set; } 
+        public DbSet<Link> links { get; set; }
+        public DbSet<Comments> comments { get; set; }
+        public DbSet<Notice> notice { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -9,10 +9,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\assets\**" />
     <Compile Remove="wwwroot\editor.md-ext\**" />
+    <Compile Remove="wwwroot\Lins\**" />
+    <Content Remove="wwwroot\assets\**" />
     <Content Remove="wwwroot\editor.md-ext\**" />
+    <Content Remove="wwwroot\Lins\**" />
+    <EmbeddedResource Remove="wwwroot\assets\**" />
     <EmbeddedResource Remove="wwwroot\editor.md-ext\**" />
+    <EmbeddedResource Remove="wwwroot\Lins\**" />
+    <None Remove="wwwroot\assets\**" />
     <None Remove="wwwroot\editor.md-ext\**" />
+    <None Remove="wwwroot\Lins\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\css\musicstyles" />
+    <Content Remove="wwwroot\js\index.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +37,7 @@
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="12.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
@@ -41,22 +55,53 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Personalblog.Contrib\Personalblog.Contrib.csproj" />
     <ProjectReference Include="..\Personalblog.Migrate\Personalblog.Migrate.csproj" />
     <ProjectReference Include="..\Personalblog.Model\Personalblog.Model.csproj" />
     <ProjectReference Include="..\PersonalblogServices\PersonalblogServices.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\assets\yasuo\" />
-    <Folder Include="wwwroot\assets\yasuo2\" />
     <Folder Include="wwwroot\media\blog\" />
     <Folder Include="wwwroot\media\photofraphy\" />
     <Folder Include="wwwroot\media\yasuo\" />
     <Folder Include="wwwroot\media\yasuo2\" />
-    <Folder Include="wwwroot\Lins\" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="wwwroot\baidu_verify_codeva-fsDbwcMAGi.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\mp3\1.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\mp3\2.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\mp3\index.4a0e1cf1.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\mp3\index.aed4c9e8.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\verification.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\WW_verify_DS3vSsNZ1JU9aiU9.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="app.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="app.db-shm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="app.db-wal">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Dockerfile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -293,6 +293,10 @@ namespace Personalblog.Services
             {
                 photoFile.CopyTo(fs);
             }
+            string yasuoPath = Path.Combine(_environment.WebRootPath, Path.Combine("media/yasuo2", $"{photoId}.jpg"));
+            //压缩图片
+            CompressImage(savePath, yasuoPath, 30);
+            photo.YPath = Path.Combine("yasuo2", $"{photoId}.jpg");
 
             photo = BuildPhotoData(photo);
             try
@@ -364,7 +368,50 @@ namespace Personalblog.Services
             _myDbContext.SaveChanges();
             return 1;
         }
+        /// <summary>
+        /// 压缩图片
+        /// </summary>
+        /// <param name="inputImagePath">原图片路径</param>
+        /// <param name="outputDirectory">输出目录</param>
+        /// <param name="quality">压缩质量</param>
+        public static void CompressImage(string inputImagePath, string outputDirectory, int quality)
+        {
+            // 加载原始图片
+            using var image = SixLabors.ImageSharp.Image.Load(inputImagePath);
 
+            // 设置压缩选项
+            var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
+            {
+                Quality = quality
+            };
+
+            // 生成输出图片路径
+            string fileName = Path.GetFileName(inputImagePath);
+            //string outputImagePath = Path.Combine(outputDirectory, fileName);
+
+            // 保存压缩后的图片
+            using var outputStream = new FileStream(outputDirectory, FileMode.Create);
+            image.Save(outputStream, encoder);
+        }
+        public async Task<Photo?> GetNext(string id)
+        {
+            var photo = await  _myDbContext.photos.Where(a=>a.Id == id).FirstOrDefaultAsync();
+            if (photo == null) return null;
+            var next = await _myDbContext.photos.
+                Where(a=>a.CreateTime < photo.CreateTime && a.Id != id).
+                OrderByDescending(a=>a.CreateTime).FirstOrDefaultAsync();
+            return next;
+        }
+        public async Task<Photo?> GetPrevious(string id)
+        {
+            var photo = await _myDbContext.photos.Where(a => a.Id == id).FirstOrDefaultAsync();
+            if (photo == null) return null;
+            var next = await _myDbContext.photos
+                .Where(a => a.CreateTime > photo.CreateTime && a.Id != id)
+                .OrderBy(a => a.CreateTime)
+                .FirstOrDefaultAsync();
+            return next;
+        }
         /// <summary>
         /// 无损压缩图片
         /// </summary>

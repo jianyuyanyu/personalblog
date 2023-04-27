@@ -42,5 +42,9 @@ namespace Personalblog.Model.Entitys
         /// 图片创建时间
         /// </summary>
         public DateTime CreateTime { get; set; }
+        /// <summary>
+        /// 压缩后的图片路径
+        /// </summary>
+        public string? YPath { get; set; }
     }
 }

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Personalblog.Contrib.SiteMessage;
 using Personalblog.Filter;
 using Personalblog.Middlewares;
 using Personalblog.Model;
@@ -14,10 +16,12 @@ using PersonalblogServices.FCategory;
 using PersonalblogServices.FPhoto;
 using PersonalblogServices.FPost;
 using PersonalblogServices.FtopPost;
-
+using PersonalblogServices.Links;
 using SixLabors.ImageSharp.Web.DependencyInjection;
 using StackExchange.Profiling.Storage;
 using System.Text;
+using PersonalblogServices.CommentService;
+using PersonalblogServices.Notice;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,13 +35,14 @@ builder.Services.AddControllersWithViews().AddNewtonsoftJson(options =>
 builder.WebHost.UseUrls("http://*:7031");
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-//Êý¾Ý¿âÁ¬½Ó
+//ï¿½ï¿½ï¿½Ý¿ï¿½ï¿½ï¿½ï¿½ï¿½
 builder.Services.AddDbContext<MyDbContext>(opt =>
 {
-    string connStr = "";
-    opt.UseMySql(connStr, new MySqlServerVersion(new Version(5, 7, 40)));
+    //opt.UseMySql(connStr, new MySqlServerVersion(new Version(5, 7, 40)));   
+    string connStr = "Data Source=app.db";
+    opt.UseSqlite(connStr);
 });
-//¿çÓò
+//ï¿½ï¿½ï¿½ï¿½
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy",
@@ -46,58 +51,65 @@ builder.Services.AddCors(options =>
         .AllowAnyMethod()
         .WithExposedHeaders("http://localhost:8080/"));
 });
-//×¢²áAotoMapper
+//×¢ï¿½ï¿½AotoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperConfigs));
-//·þÎñ²ã×¢Èë
+//ï¿½ï¿½ï¿½ï¿½ï¿½×¢ï¿½ï¿½
 builder.Services.AddTransient<IArticelsService, ArticelsService>();
 builder.Services.AddTransient<IPhotoService, PersonalblogServices.PhotoService>();
 builder.Services.AddTransient<IFPhotoService, FPhotoService>();
 builder.Services.AddTransient<IFCategoryService, FCategoryService>();
 builder.Services.AddTransient<ITopPostService, TopPostService>();
 builder.Services.AddTransient<IFPostService, FPostService>();
+builder.Services.AddTransient<ILinkService, LinkService>();
+builder.Services.AddTransient<Icommentservice, commentservice>();
+builder.Services.AddTransient<INoticeService, NoticeService>();
 
 builder.Services.AddHttpContextAccessor();
-// ×¢²á IHttpClientFactory£¬²Î¿¼£ºhttps://docs.microsoft.com/zh-cn/dotnet/core/extensions/http-client
+// ×¢ï¿½ï¿½ IHttpClientFactoryï¿½ï¿½ï¿½Î¿ï¿½ï¿½ï¿½https://docs.microsoft.com/zh-cn/dotnet/core/extensions/http-client
 builder.Services.AddHttpClient();
-//×¢Èë×Ô¶¨Òå·þÎñ
-builder.Services.AddScoped<ICategoryService, CategoryService>();
+//×¢ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+builder.Services.AddScoped<ICategoryService, PersonalblogServices.Categorys.CategoryService>();
 builder.Services.AddScoped<Personalblog.Services.PhotoService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<BlogService>();
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<ConfigService>();
+builder.Services.AddScoped<Personalblog.Services.CategoryService>();
 builder.Services.AddScoped<VisitRecordService>();
+builder.Services.AddSingleton<Messages>();
 builder.Services.AddSingleton<CommonService>();
 builder.Services.AddSingleton<PiCLibService>();
-//×¢Èëjwt·þÎñ
+builder.Services.AddSingleton<CrawlService>();
+
+//×¢ï¿½ï¿½jwtï¿½ï¿½ï¿½ï¿½
 builder.Services.Configure<SecuritySetting>(builder.Configuration.GetSection(nameof(SecuritySetting)));
-//×¢ÈëMiniprofiler
+//×¢ï¿½ï¿½Miniprofiler
 builder.Services.AddMiniProfiler(options =>
 {
-    //·ÃÎÊµØÖ·Â·ÓÉ¸ùÄ¿Â¼£»Ä¬ÈÏÎª£º/mini-profiler-resources
+    //ï¿½ï¿½ï¿½Êµï¿½Ö·Â·ï¿½É¸ï¿½Ä¿Â¼ï¿½ï¿½Ä¬ï¿½ï¿½Îªï¿½ï¿½/mini-profiler-resources
     options.RouteBasePath = "/profiler";
-    //Êý¾Ý»º´æÊ±¼ä
+    //ï¿½ï¿½ï¿½Ý»ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
     (options.Storage as MemoryCacheStorage).CacheDuration = TimeSpan.FromMinutes(60);
-    //sql¸ñÊ½»¯ÉèÖÃ
+    //sqlï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     options.SqlFormatter = new StackExchange.Profiling.SqlFormatters.InlineFormatter();
-    //¸ú×ÙÁ¬½Ó´ò¿ª¹Ø±Õ
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó´ò¿ª¹Ø±ï¿½
     options.TrackConnectionOpenClose = true;
-    //½çÃæÖ÷ÌâÑÕÉ«·½°¸;Ä¬ÈÏÇ³É«
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½;Ä¬ï¿½ï¿½Ç³É«
     options.ColorScheme = StackExchange.Profiling.ColorScheme.Dark;
-    //.net core 3.0ÒÔÉÏ£º¶ÔMVC¹ýÂËÆ÷½øÐÐ·ÖÎö
+    //.net core 3.0ï¿½ï¿½ï¿½Ï£ï¿½ï¿½ï¿½MVCï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ï¿½
     options.EnableMvcFilterProfiling = true;
-    //¶ÔÊÓÍ¼½øÐÐ·ÖÎö
+    //ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ï¿½
     options.EnableMvcViewProfiling = true;
 }).AddEntityFramework();
-//Ìí¼Ójwt
+//ï¿½ï¿½ï¿½jwt
 builder.Services.AddAuthentication(options => {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
     .AddJwtBearer(options => {
-        // ÕâÀïÓÃµ½ÎÒÃÇÖ®Ç°¶¨ÒåºÃµÄÅäÖÃÀà
+        // ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½Ö®Ç°ï¿½ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         var secSettings = builder.Configuration.GetSection(nameof(SecuritySetting)).Get<SecuritySetting>();
-        // ÉèÖÃjwt tokenµÄ¸÷ÖÖÐÅÏ¢ÓÃÓÚÑéÖ¤
+        // ï¿½ï¿½ï¿½ï¿½jwt tokenï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = true,
@@ -110,8 +122,8 @@ builder.Services.AddAuthentication(options => {
             ClockSkew = TimeSpan.Zero
         };
     });
-//Í¼Æ¬ËõÂÔÍ¼
-// ×¢²á·þÎñ
+//Í¼Æ¬ï¿½ï¿½ï¿½ï¿½Í¼
+// ×¢ï¿½ï¿½ï¿½ï¿½ï¿½
 builder.Services.AddImageSharp();
 
 var app = builder.Build();
@@ -124,25 +136,33 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-//ÊÇ·ñ¿ªÆô¼àÌý
+//ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //app.UseMiniProfiler();
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
-//ÖÐ¼ä¼þ ÓÃÓÚ±£´æ½Ó¿Ú·ÃÎÊÐÅÏ¢
-app.UseMiddleware<VisitRecordMiddleware>();
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
-//¿ªÆô¿çÓò
+//ï¿½Ð¼ï¿½ï¿½ ï¿½ï¿½ï¿½Ú±ï¿½ï¿½ï¿½Ó¿Ú·ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+//app.UseMiddleware<VisitRecordMiddleware>();
+app.UseVisitRecordMiddleware();
+
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 app.UseCors("CorsPolicy");
 
-// Ìí¼ÓÖÐ¼ä¼þ
+// ï¿½ï¿½ï¿½ï¿½Ð¼ï¿½ï¿½
 app.UseImageSharp();
 
 app.UseRouting();
 
 
-//¿ªÆôjwt·þÎñ
+//ï¿½ï¿½ï¿½ï¿½jwtï¿½ï¿½ï¿½ï¿½
 app.UseAuthentication();
 app.UseAuthorization();
 

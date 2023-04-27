@@ -1,22 +1,26 @@
-﻿<!DOCTYPE html>
+﻿@inject Personalblog.Contrib.SiteMessage.Messages Messages
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="ZY的博客 继承画星星博客">
-    <meta name="author" content="DealiAxy">
-    <meta name="generator" content="StarBlog">
-    <title>StarBlog · ZY - @ViewData["Title"]</title>
-    <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+    <meta name="description" content="ZY知识库 继承画星星博客">
+    <title>ZY知识库 · ZY - @ViewData["Title"]</title>
+    <link rel="icon" href="~/images/logo2.gif" />
+    @*<link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />*@
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/css/bootstrap.min.css" rel="stylesheet">
     <link href="~/css/all.css" rel="stylesheet" />
     <link rel="stylesheet" href="/css/features.css">
     <link rel="stylesheet" href="/css/metro.css">
     <link rel="stylesheet" href="/css/footer.css">
     <link href="~/css/editormd.preview.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://kit.fontawesome.com/db6244163b.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link href="~/mp3/index.aed4c9e8.css" rel="stylesheet" />
+    
     <script src="/js/siteLoad.js"></script>
-    <script src="https://kit.fontawesome.com/db6244163b.js"></script>
     @await RenderSectionAsync("head", false)
 @*    <style type="text/css">
         body,html{
@@ -24,6 +28,40 @@
             -webkit-filter:grayscale(100%);
         }
     </style>*@
+    <style>
+        .round-icon {
+            border-radius: 50%;
+            width: 66px;
+            height: 66px;
+            object-fit: cover;
+        }
+
+        .animated-icon {
+            transition: transform 0.5s ease-in-out;
+        }
+
+            .animated-icon:hover {
+                transform: scale(1.2) rotate(360deg);
+            }
+
+        .nav-link {
+            text-decoration: none;
+            color: white;
+        }
+
+            .nav-link:hover {
+                text-decoration: none;
+                color: white;
+            }
+
+        .bi {
+            transition: transform 0.3s;
+        }
+
+        li:hover .bi {
+            transform: translateY(-5px);
+        }
+    </style>
 </head>
 <body>
     @*<mini-profiler />*@
@@ -32,8 +70,8 @@
             <div class="container">
                 <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
                     <a class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-white text-decoration-none"
-                       asp-controller="Home" asp-action="Index">
-                        <img src="https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fp.qqan.com%2Fup%2F2022-12%2F20221221511295206.png&refer=http%3A%2F%2Fp.qqan.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1672579733&t=4f3c701886041ed13fca7f44a39e71cc" class="rounded-circle" alt="" style="height: 64px;width: 64px;">
+                       asp-controller="Home" asp-action="Index" >
+                        <img src="~/images/logo4.jpg" class="round-icon animated-icon" alt="">
                     </a>
 
                     <ul class="nav col-12 col-lg-auto pt-1 my-2 justify-content-center my-md-0 text-small">
@@ -85,6 +123,14 @@
                                 </div>
                                 About
                             </a>
+                        <li>
+                            <a class="nav-link text-white" href="https://pljzy.top:5244/" target="_blank">
+                                <div class="bi d-block mx-auto mb-1 text-center">
+                                    <i class="fa-solid fa-download fa-2xl"></i>
+                                </div>
+                                Cloud
+                            </a>
+                        </li>
                         </li>
                     </ul>
                 </div>
@@ -94,10 +140,16 @@
             <div class="container d-flex flex-wrap justify-content-center">
                 <form class="col-12 col-lg-auto mb-2 mb-lg-0 me-lg-auto"
                       asp-controller="Search" asp-action="Blog">
-                    <input type="search" style="display:none" class="form-control" placeholder="Search..." aria-label="Search" name="keyword">
+                    <input type="search" class="form-control" placeholder="Search..." aria-label="Search" name="keyword">
                 </form>
 
                 <div class="text-end">
+                    <span class="dropdown me-2">
+                        <a href="#" class="btn btn-light" id="dropdown" role="button" onclick="stopp()">
+                            <i class="bi bi-arrow-repeat"></i>
+                            樱花
+                        </a>
+                    </span>
                     <span class="dropdown me-2">
                         <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
                             Themes
@@ -118,6 +170,13 @@
     </header>
 
     <main id="vue-app">
+        <div class="container mt-3">
+            @while (!Messages.IsEmpty)
+            {
+                var message = Messages.Dequeue();
+                <partial name="Widgets/Alert" model="message" />
+            }
+        </div>
         @RenderBody()
     </main>
 
@@ -126,18 +185,16 @@
             <div class="container">
                 <div class="row">
                     <div id="footer-content" class="col-md-10 col-md-offset-3 footer-list text-center">
-                        <p style="color:white">本网站持续更新。。。。。。</p>
-                        @*<p class="social-icons">
-                            <a target="_blank" rel="nofollow" href="https://www.cnblogs.com/deali/"><i class="fa-solid fa-blog"></i></a>
+                        <p class="social-icons">
+                            <a target="_blank" rel="nofollow" href="https://www.cnblogs.com/ZYPLJ/"><i class="fa-solid fa-blog"></i></a>
                             <a asp-controller="About" asp-action="Index"><i class="fab fa-weixin"></i></a>
-                            <a target="_blank" rel="nofollow" href="https://live.bilibili.com/11883038"><i class="fa-brands fa-bilibili"></i></a>
-                            <a target="_blank" rel="nofollow" href="http://github.com/Deali-Axy"><i class="fab fa-github"></i></a>
-                            <a target="_blank" rel="nofollow" href="https://www.zhihu.com/people/dealiaxy"><i class="fab fa-zhihu"></i></a>
+                            <a target="_blank" rel="nofollow" href="https://github.com/ZyPLJ"><i class="fab fa-github"></i></a>
+                            <a target="_blank" rel="nofollow" href="https://gitee.com/zyplj"><i class="bi bi-git"></i></a>
                         </p>
 
                         <p>
                             Copyright © @DateTime.Now.Year.ToString()
-                            <a href="https://github.com/Deali-Axy">DealiAxy</a>. All Rights Reserved.
+                            <a href="https://gitee.com/zyplj">ZY</a>. All Rights Reserved.
                         </p>
                         <p>
                             All content is released under
@@ -158,16 +215,22 @@
                             含有程序代码內容的文章 (如 Java, Python, C#, Go) 除外，包含的程序代码皆以 <a href="http://www.gnu.org/licenses/gpl.html" rel="external nofollow" target="_blank">GPL v3</a> 发布。
                         </p>
                         <p>
-                            本站使用 <a href="https://github.com/Deali-Axy/StarBlog">StarBlog</a> 开源博客系统，
+                            本站使用 <a href="https://github.com/ZyPLJ/personalblog">ZYBlog</a> 开源博客系统，
                             基于 <a href="https://dotnet.microsoft.com/zh-cn/">.NetCore</a> 技术构建
-                        </p>*@
+                        </p>
+                        <p>
+                            <span id="siteRunningTime" style="color:cornsilk">
+                                网站运行时间：计算中...
+                            </span>
+                            &nbsp;&nbsp;
+                            <a href="https://beian.miit.gov.cn">湘ICP备2023007264号-1</a>
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </footer>
     <script>
-
         !function (e, t, a) {
             function r() {
                 for (var e = 0; e < s.length; e++) s[e].alpha <= 0 ? (t.body.removeChild(s[e].el), s.splice(e, 1)) : (s[e].y--, s[e].scale += .004, s[e].alpha -= .013, s[e].el.style.cssText = "left:" + s[e].x + "px;top:" + s[e].y + "px;opacity:" + s[e].alpha + ";transform:scale(" + s[e].scale + "," + s[e].scale + ") rotate(45deg);background:" + s[e].color + ";z-index:99999");
@@ -367,9 +430,8 @@
         }
 
         img.onload = function () {
-            startSakura();
+            //startSakura();
         }
-
         function stopp() {
             if (staticx) {
                 const child = document.getElementById("canvas_sakura");
@@ -380,11 +442,42 @@
                 startSakura();
             }
         }
+        function calculateTimeDifference(startDate) {
+            const now = new Date();
+            const timeDifference = now - startDate;
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = now.getHours(); // 使用24小时制
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            return { days, hours, minutes, seconds };
+        }
+
+        function updateSiteRunningTime() {
+            // 网站开始运行的日期（根据实际情况修改）
+            const startDate1 = new Date("2023-04-08");
+
+            // 计算运行时间
+            const timeDifference1 = calculateTimeDifference(startDate1);
+
+            // 更新显示网站运行时间的元素
+            const runningTimeElement1 = document.getElementById("siteRunningTime");
+            runningTimeElement1.textContent = `网站运行时间：${timeDifference1.days}天 ${timeDifference1.hours}时 ${timeDifference1.minutes}分 ${timeDifference1.seconds}秒`;
+        }
+
+        // 立即更新网站运行时间
+        updateSiteRunningTime();
+
+        // 每秒更新一次网站运行时间
+        setInterval(updateSiteRunningTime, 1000);
     </script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+@*    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>*@
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.2.3/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/vue.js"></script>
     <script src="~/lib/site.js"></script>
-
+    <script src="https://unpkg.com/petite-vue@0.4.1/dist/petite-vue.iife.js"></script>
+    <script src="~/mp3/index.4a0e1cf1.js"></script>
+    <script src="~/js/index.js"></script>
     @await RenderSectionAsync("bottom", false)
 </body>
 </html>

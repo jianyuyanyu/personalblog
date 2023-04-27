@@ -41,7 +41,7 @@ namespace Personalblog.Apis
         /// </summary>
         /// <returns></returns>
         [HttpPost("[action]")]
-        public async Task<ApiResponse<Post>> Upload([FromForm] String Categoryname, IFormFile file,
+        public async Task<ApiResponse<Post>> Upload([FromForm] String Categoryname,[FromForm]String Parent, IFormFile file,
             [FromServices] ICategoryService categoryService
         )
         {
@@ -50,13 +50,33 @@ namespace Personalblog.Apis
                 return ApiResponse.BadRequest("只能上传zip格式的文件哦~");
             }
             var category = categoryService.Getbyname(Categoryname);
+            int cid;
+            Category categoryParent;
+            Category c2;
             if (category == null)
             {
-                Category c = new Category() { Name = Categoryname, Visible = true };
-                int Cid = categoryService.AddCategory(c);
+                Category c = new Category() { Name = Categoryname, Visible = true, ParentId = 0 };
+                cid = categoryService.AddCategory(c);
+            }
+            else
+            {
+                cid = category.Id;
+            }
+            if (Parent != null && !string.IsNullOrEmpty(Parent) && Parent != "null")
+            {
+                categoryParent = categoryService.GetbyParentname(Parent, cid);
+                if(categoryParent != null)
+                {
+                    cid = categoryParent.Id;
+                }
+                else
+                {
+                    c2 = new Category() { Name = Parent, Visible = true, ParentId = cid };
+                    cid = categoryService.AddCategory(c2);
+                }
                 try
                 {
-                    return new ApiResponse<Post>(await _blogService.Upload(Cid, file));
+                    return new ApiResponse<Post>(await _blogService.Upload(cid, file));
                 }
                 catch (Exception ex)
                 {
@@ -65,7 +85,7 @@ namespace Personalblog.Apis
             }
             try
             {
-                return new ApiResponse<Post>(await _blogService.Upload(category.Id, file));
+                return new ApiResponse<Post>(await _blogService.Upload(cid, file));
             }
             catch (Exception ex)
             {

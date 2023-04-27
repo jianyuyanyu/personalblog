@@ -1,14 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Personalblog.Model;
 using Personalblog.Model.Entitys;
+using Personalblog.Model.ViewModels;
 using Personalblog.Model.ViewModels.Categories;
-using PersonalblogServices.Categorys;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Personalblog;
 
 namespace PersonalblogServices.Categorys
 {
@@ -16,6 +14,7 @@ namespace PersonalblogServices.Categorys
     {
         private readonly MyDbContext _myDbContext;
         private readonly IMapper _mapper;
+
         public CategoryService(MyDbContext myDbContext,IMapper mapper)
         {
             _myDbContext = myDbContext;
@@ -128,7 +127,12 @@ namespace PersonalblogServices.Categorys
 
         public Category Getbyname(string name)
         {
-            return _myDbContext.categories.Where(a=>a.Name==name).FirstOrDefault();
+            return _myDbContext.categories.Where(a=>a.Name==name && a.ParentId == 0).FirstOrDefault();
+        }
+
+        public Category GetbyParentname(string name, int id)
+        {
+            return _myDbContext.categories.Where(a => a.Name == name && a.ParentId == id).FirstOrDefault();
         }
     }
 }

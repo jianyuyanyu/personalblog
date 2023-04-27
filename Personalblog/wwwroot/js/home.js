@@ -24,12 +24,12 @@ let homeApp = new Vue({
     },
     methods: {
         loadPoem() {
-            fetch('http://www.sblt.deali.cn:15911/poem/simple')
-                .then(res => res.text()).then(res => this.poemSimple = res)
+            fetch('/Api/DataAcq/Poem')
+                .then(res => res.json()).then(res => this.poemSimple = res.data)
         },
         loadHitokoto() {
-            fetch('http://www.sblt.deali.cn:15911/hitokoto/get')
-                .then(res => res.json()).then(res => this.hitokoto = res.data[0].hitokoto)
+            fetch('/Api/DataAcq/Hitokoto')
+                .then(res => res.json()).then(res => this.hitokoto = res.data)
         },
         /**
          * 生成随机RGB颜色字符串，例如：rgb(123,123,123)

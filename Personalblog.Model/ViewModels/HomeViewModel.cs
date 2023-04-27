@@ -22,8 +22,16 @@ namespace Personalblog.Model.ViewModels
         /// </summary>
         public Post? TopPost { get; set; }
         /// <summary>
+        /// 友情链接
+        /// </summary>
+        public List<Link> Links { get; set; } = new();
+        /// <summary>
         /// 推荐文章
         /// </summary>
         public List<Post>? FeaturedPosts { get; set; }
+        /// <summary>
+        /// 网站通知
+        /// </summary>
+        public List<Notice>? Notices { get; set; }
     }
 }

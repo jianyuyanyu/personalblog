@@ -27,5 +27,7 @@ namespace PersonalblogServices.Categorys
         int AddCategory(Category category);
         //更加分类名称去查询
         Category Getbyname(string name);
+        //查询二级目录
+        Category GetbyParentname(string name, int id);
     }
 }

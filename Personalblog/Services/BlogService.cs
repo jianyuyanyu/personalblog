@@ -108,6 +108,8 @@ namespace Personalblog.Services
             var mdFIle = files.First();
             using var reader = mdFIle.OpenText();
             var content = await reader.ReadToEndAsync();
+
+
             var post = new Post
             {
                 Id = GuidUtils.GuidTo16String(),

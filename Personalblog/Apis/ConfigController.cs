@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Personalblog.Model.Entitys;
 using Personalblog.Services;
+using PersonalblogServices.Response;
 
 namespace Personalblog.Apis
 {
@@ -20,6 +21,23 @@ namespace Personalblog.Apis
         public List<ConfigItem> GetAll()
         {
             return _service.GetAll();
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<ApiResponse> IsShow(int id)
+        {
+            return await _service.IsShow(id);
+        }
+        [HttpDelete("{id:int}")]
+        public async Task<ApiResponse> Del(int id)
+        {
+            return await _service.DelAsync(id);
+        }
+
+        [HttpPost]
+        public async Task<ApiResponse> Add(ConfigItem configItem)
+        {
+            return await _service.AddAsync(configItem);
         }
     }
 }

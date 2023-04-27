@@ -213,12 +213,36 @@ namespace Personalblog.Services
                 fileRelativePath = Path.Combine("media", "blog", post.Id!, newFilename);
                 savePath = Path.Combine(_environment.WebRootPath, fileRelativePath);
             }
-
             using (var fs = new FileStream(savePath, FileMode.Create))
             {
                 file.CopyTo(fs);
             }
             return Path.Combine(Host, fileRelativePath);
+        }
+        /// <summary>
+        /// 压缩图片
+        /// </summary>
+        /// <param name="inputImagePath">原图片路径</param>
+        /// <param name="outputDirectory">输出目录</param>
+        /// <param name="quality">压缩质量</param>
+        public static void CompressImage(string inputImagePath, string outputDirectory, int quality)
+        {
+            // 加载原始图片
+            using var image = SixLabors.ImageSharp.Image.Load(inputImagePath);
+
+            // 设置压缩选项
+            var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
+            {
+                Quality = quality
+            };
+
+            // 生成输出图片路径
+            string fileName = Path.GetFileName(inputImagePath);
+            //string outputImagePath = Path.Combine(outputDirectory, fileName);
+
+            // 保存压缩后的图片
+            using var outputStream = new FileStream(outputDirectory, FileMode.Create);
+            image.Save(outputStream, encoder);
         }
     }
 }

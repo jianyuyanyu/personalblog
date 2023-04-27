@@ -1,5 +1,7 @@
-﻿using Personalblog.Model;
+﻿using Microsoft.EntityFrameworkCore;
+using Personalblog.Model;
 using Personalblog.Model.Entitys;
+using PersonalblogServices.Response;
 
 namespace Personalblog.Services
 {
@@ -65,6 +67,54 @@ namespace Personalblog.Services
                 var item = GetByKey(key) ?? new ConfigItem { Key = key };
                 item.Value = value;
                 AddOrUpdate(item);
+            }
+        }
+
+        public async Task<ApiResponse> IsShow(int id)
+        {
+            var data = await _mydbContext.configItems.FirstOrDefaultAsync(c => c.Id == id);
+            if (data.IsShowComment)
+            {
+                data.IsShowComment = false;
+            }
+            else
+            {
+                data.IsShowComment = true;
+            }
+            await _mydbContext.SaveChangesAsync();
+            return new ApiResponse() { Message = "修改成功！" };
+        }
+
+        public async Task<ApiResponse> DelAsync(int id)
+        {
+            ConfigItem configItem = new ConfigItem() { Id = id };
+            _mydbContext.configItems.Attach(configItem);
+            _mydbContext.configItems.Remove(configItem);
+            try
+            {
+                await _mydbContext.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return new ApiResponse() { Message = $"删除失败,{e.Message}", StatusCode = 500 };
+            }
+
+            return new ApiResponse() { Message = $"删除成功" };
+        }
+
+        public async Task<ApiResponse> AddAsync(ConfigItem configItem)
+        {
+            try
+            {
+                await _mydbContext.configItems.AddAsync(configItem);
+                await _mydbContext.SaveChangesAsync();
+                return new ApiResponse() { Message = "添加成功！" };
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return new ApiResponse() { Message = $"添加失败！{e.Message}" ,StatusCode = 500};
             }
         }
     }

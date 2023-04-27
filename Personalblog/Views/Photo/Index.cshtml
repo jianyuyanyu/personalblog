@@ -3,10 +3,13 @@
 @using Personalblog.Model.ViewModels
 @using Personalblog.Utils
 @model PhotographyViewModel
-<script src="~/js/jquery.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
 <script src="https://unpkg.com/imagesloaded@5.0.0/imagesloaded.pkgd.js"></script>
 <script src="~/js/masonry.pkgd.min.js"></script>
 
+@{
+    ViewBag.Title = "摄影";
+}
 <div class="container px-4 py-3">
     <h2 class="d-flex w-100 justify-content-between pb-2 mb-3 border-bottom">
         <div>Photography</div>
@@ -18,7 +21,8 @@
             @foreach (var photo in Model.photos)
             {
                 <div class="col-sm-6 col-lg-4 mb-4">
-                    <partial name="Widgets/PhotoCard" model="photo" />
+                    @await Html.PartialAsync("Widgets/PhotoCard",model:photo)
+@*                    <partial name="Widgets/PhotoCard" model="photo" />*@
                 </div>
             }
         </div>
