@@ -11,7 +11,7 @@
 
 # 配套后台管理系统
 
-[PersonalblogVue: 基于Vue3框架搭建的个人博客后台管理系统。 (gitee.com)](https://gitee.com/zyplj/personalblog-vue)
+[PersonalblogVue: 基于Vue3框架搭建的个人博客后台管理系统。 (github.com)](https://github.com/ZyPLJ/PersonalblogVue)
 
 # 项目截图
 
