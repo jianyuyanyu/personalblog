@@ -1,0 +1,24 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model Personalblog.Model.ViewModels.FeaturedPostTopCardModel
+
+<div class="col-md-6 col-sm-12 mb-0">
+    <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+        <div class="col p-4 d-flex flex-column position-static">
+            <strong class="d-inline-block mb-2 text-primary">@Model.FeaturedPost.Categories.Name</strong>
+            <h5 class="mb-0">@Model.FeaturedPost.Title</h5>
+            <div class="mb-1 text-muted">@Model.FeaturedPost.LastUpdateTime.ToShortDateString()</div>
+            <a class="stretched-link"
+               asp-controller="Blog" asp-action="Post" asp-route-id="@Model.FeaturedPost.Id">
+                Continue reading
+            </a>
+          @if(Model.Number == 1)
+          {
+          <div class="recommendation recommendation-first">之前</div>
+          }
+          else
+          {
+              <div class="recommendation recommendation-last">最新</div>
+          }
+        </div>
+    </div>
+</div>

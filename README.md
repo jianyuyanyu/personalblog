@@ -7,11 +7,11 @@
 
 # 项目浏览地址
 
-[ZY个人博客](http://101.43.25.210:7031/)
+[ZY个人博客](https://pljzy.top/)
 
 # 配套后台管理系统
 
-[PersonalblogVue: 基于Vue3框架搭建的个人博客后台管理系统。 (github.com)](https://github.com/ZyPLJ/PersonalblogVue)
+[PersonalblogVue: 基于Vue3框架搭建的个人博客后台管理系统。 (gitee.com)](https://gitee.com/zyplj/personalblog-vue)
 
 # 项目截图
 
