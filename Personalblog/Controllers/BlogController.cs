@@ -93,7 +93,7 @@ namespace Personalblog.Controllers
         public IActionResult RandomPost()
         {
             var posts = ArticelsService.GetPhotos();
-            var randPost = posts[new Random().Next(posts.Count)];
+            var randPost = posts[Random.Shared.Next(posts.Count)];
             if (posts.Count == 0)
             {
                 _messages.Error("当前没有文章，请先添加文章！");
@@ -107,10 +107,7 @@ namespace Personalblog.Controllers
         [HttpPost]
         public async Task<IActionResult> SubComment(Comments comments)
         {
-            if (comments.ParentCommentId == null)
-            {
-                comments.ParentCommentId = 0;
-            }
+            comments.ParentCommentId ??= 0;
 
             if (comments.Content == null)
             {
@@ -137,7 +134,7 @@ namespace Personalblog.Controllers
             {
                 if (comments.ParentCommentId != 0)
                 {
-                    var email = await _commentservice.GetEmail(comments.ParentCommentId);
+                    var email = await _commentservice.GetEmail( comments.ParentCommentId ?? default);
                     if (email == "邮箱错误")
                     {
                         _messages.Error("邮箱错误！~");

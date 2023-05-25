@@ -18,7 +18,7 @@ public class Comments
     /// <summary>
     /// 父评论的ID（用于回复评论）
     /// </summary>
-    public int ParentCommentId { get; set; }
+    public int? ParentCommentId { get; set; }
     /// <summary>
     /// 评论者的名字
     /// </summary>
