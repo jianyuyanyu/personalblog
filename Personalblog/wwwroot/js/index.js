@@ -1,4 +1,4 @@
-//“Ù¿÷≤•∑≈
+//Èü≥‰πêÊí≠Êîæ
 const host = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : '');
 const musicUrl1 = host + "/api/music/1.mp3";
 const musicUrl2 = host + "/api/music/2.mp3";

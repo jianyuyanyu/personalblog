@@ -1,4 +1,5 @@
-﻿@model Personalblog.Model.Entitys.Comments
+﻿@using Ganss.Xss
+@model Personalblog.Model.Entitys.Comments
 
 
 
@@ -12,7 +13,13 @@
             <span class="comment_date">@Model.CreateTime</span>
             <span class="a_comment_author_5166961">@Model.Name</span>
         </div>
-        <div class="feedbackCon">
-            @Html.Raw(@Model.Content)
-        </div>   
+    <div class="feedbackCon">
+        @{
+            var sanitizer = new HtmlSanitizer();
+            sanitizer.AllowedCssProperties.Clear(); // clear all allowed CSS properties
+            sanitizer.AllowedCssProperties.Add("text-align"); 
+            string sanitizedHtml = sanitizer.Sanitize(@Model.Content);
+        }
+        @Html.Raw(sanitizedHtml)
+    </div>   
 </div>

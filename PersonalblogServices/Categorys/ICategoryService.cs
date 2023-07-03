@@ -15,7 +15,7 @@ namespace PersonalblogServices.Categorys
         List<Category> categories();
         //生成分类词云数据
         List<object> GetWordCloud();
-        Category? GetById(int id);
+        Task<Category?> GetById(int id);
         FeaturedCategory AddOrUpdateFeaturedCategory(Category category, FeaturedCategoryCreationDto dto);
         List<Category> GetAll();
         int SetVisibility(Category category, bool isVisible);
@@ -29,5 +29,11 @@ namespace PersonalblogServices.Categorys
         Category Getbyname(string name);
         //查询二级目录
         Category GetbyParentname(string name, int id);
+        //更据分类id查询文章查询是否存在
+        Task<bool> CategoryGetPost(int id);
+        //更据实体删除分类
+        Task<int> DeleteAsync(Category category);
+        //修改分类
+        Task<Category> Update(Category category);
     }
 }

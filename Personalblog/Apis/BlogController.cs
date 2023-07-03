@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Personalblog.Model.Entitys;
 using Personalblog.Model.ViewModels.Blog;
 using Personalblog.Services;
@@ -40,6 +41,7 @@ namespace Personalblog.Apis
         /// 上传博客压缩包 + 导入
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<ApiResponse<Post>> Upload([FromForm] String Categoryname,[FromForm]String Parent, IFormFile file,
             [FromServices] ICategoryService categoryService

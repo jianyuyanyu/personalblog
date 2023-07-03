@@ -1,13 +1,20 @@
-﻿using System.Net;
-using System.Net.Mail;
+﻿using System.Text.RegularExpressions;
+using AspNetCoreRateLimit;
+using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Personalblog.Model.Entitys;
 using Personalblog.Model.ViewModels;
 using PersonalblogServices.Articels;
 using PersonalblogServices.Categorys;
 using Personalblog.Contrib.SiteMessage;
 using PersonalblogServices.CommentService;
-using System.Net.Mail;
+using MimeKit;
+using Newtonsoft.Json;
+using Personalblog.Migrate;
+using PersonalblogServices.Response;
+using StackExchange.Profiling.Internal;
+using Messages = Personalblog.Contrib.SiteMessage.Messages;
 
 namespace Personalblog.Controllers
 {
@@ -18,16 +25,20 @@ namespace Personalblog.Controllers
         private Personalblog.Services.CategoryService _categoryService1 { get; set; }
         private readonly Messages _messages;
         private readonly Icommentservice _commentservice;
+        private readonly IMemoryCache _cache;
+        private readonly IConfiguration _configuration;
         public BlogController(ICategoryService categoryService,IArticelsService articelsService, 
             Messages messages, Personalblog.Services.CategoryService categoryService1,
-            Icommentservice commentservice)
+            Icommentservice commentservice,IMemoryCache cache,
+            IConfiguration configuration)
         {
             this.CategoryService = categoryService;
             this.ArticelsService = articelsService;
             _categoryService1 = categoryService1;
             _messages = messages;
             _commentservice = commentservice;
-
+            _cache = cache;
+            _configuration = configuration;
         }
         /// <summary>
         /// 所有文章列表
@@ -36,10 +47,10 @@ namespace Personalblog.Controllers
         /// <param name="page">当前页码</param>
         /// <param name="pageSize">页面最大展示数据的数量</param>
         /// <returns></returns>
-        public IActionResult List(int categoryId = 1, int page = 1, int pageSize = 5)
+        public async Task<IActionResult> List(int categoryId = 1, int page = 1, int pageSize = 5)
         {
             var clist = CategoryService.categories();
-            var currentCategory = categoryId == 0 ? clist[0] : CategoryService.GetById(categoryId);
+            var currentCategory = categoryId == 0 ? clist[0] :await CategoryService.GetById(categoryId);
 
             if (currentCategory == null)
             {
@@ -73,12 +84,34 @@ namespace Personalblog.Controllers
         /// <param name="pid"></param>
         /// <returns></returns>
         [Route("blog/post/{id}.html")]
-        public IActionResult Post(string id)
+        public async Task<IActionResult> Post(string id)
         {
             try
             {
-                var post = ArticelsService.GetArticels(id);
-                return View(ArticelsService.GetPostViewModel(post));
+                //缓存
+                var post = await _cache.GetOrCreateAsync($"{id}", async (e) =>
+                {
+                    //设置缓存过期时间10s钟
+                    e.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
+                    Console.WriteLine($"缓存没找到，到数据库中查一查，id={id}");
+                    return await ArticelsService.GetArticels(id);
+                });
+                // var sessionId = HttpContext.Session.Id;
+                // // 从缓存中获取当前用户的错误信息
+                // if (_cache.TryGetValue("Errors", out Dictionary<string, string> errors) 
+                //     && errors.TryGetValue(sessionId, out var message))
+                // {
+                //     // 如果当前用户有错误信息，则显示警告消息
+                //     _messages.Warning(message);
+                //     // 从缓存中移除当前用户的错误信息
+                //     errors.Remove(sessionId);
+                // }
+                var codeBlockTheme = _configuration.GetSection("CodeBlockTheme").GetValue<string>("Theme");
+                if (codeBlockTheme == "rear-end")
+                {
+                    return View("PostTwo",await ArticelsService.GetPostViewModel(post));
+                }
+                return View("Post",await ArticelsService.GetPostViewModel(post));
             }
             catch (Exception)
             {
@@ -93,7 +126,7 @@ namespace Personalblog.Controllers
         public IActionResult RandomPost()
         {
             var posts = ArticelsService.GetPhotos();
-            var randPost = posts[new Random().Next(posts.Count)];
+            var randPost = posts[Random.Shared.Next(posts.Count)];
             if (posts.Count == 0)
             {
                 _messages.Error("当前没有文章，请先添加文章！");
@@ -103,33 +136,33 @@ namespace Personalblog.Controllers
                       $"<span class='ps-3'><a href=\"{Url.Action(nameof(RandomPost))}\">再来一次</a></span>");
             return RedirectToAction(nameof(Post), new { id = randPost.Id });
         }
-
         [HttpPost]
-        public async Task<IActionResult> SubComment(Comments comments)
+        public async Task<ApiResponse> SubComment([FromBody]Comments comments)
         {
             if (comments.ParentCommentId == null)
             {
                 comments.ParentCommentId = 0;
             }
 
-            if (comments.Content == null)
+            if (comments.Content.Equals("[{\"insert\":\"\\n\"}]") || comments.Content == "" || comments.Content == null)
             {
-                _messages.Warning("请输入评论内容~");
-                return RedirectToAction(nameof(Post), new { id = comments.ArticleId});
+                return new ApiResponse(){Data = "请输入评论内容",Message = "请输入评论内容",StatusCode = 422};
             }
 
-            if (comments.Name == null)
+            if (comments.Name == null || comments.Name == "")
             {
-                _messages.Warning("请输入昵称~");
-                return RedirectToAction(nameof(Post), new { id = comments.ArticleId});
+                return new ApiResponse(){Message = "请输入昵称~",StatusCode = 422};
             }
 
-            if (comments.Email == null)
+            if (comments.Email ==  null || comments.Email =="")
             {
-                _messages.Warning("请输入邮箱~");
-                return RedirectToAction(nameof(Post), new { id = comments.ArticleId});
+                return new ApiResponse(){Message = "请输入邮箱~",StatusCode = 422};
             }
-
+            bool isValid = CheckEmail.CheckEmailFormat(comments.Email);
+            if (!isValid)
+            {
+                return new ApiResponse(){Message = "邮箱格式错误~",StatusCode = 422};
+            }
             comments.CreateTime = DateTime.Now;
             var data = await _commentservice.SubmitCommentsAsync(comments);
             var content = data.Data as Comments;
@@ -140,32 +173,29 @@ namespace Personalblog.Controllers
                     var email = await _commentservice.GetEmail(comments.ParentCommentId);
                     if (email == "邮箱错误")
                     {
-                        _messages.Error("邮箱错误！~");
-                        return RedirectToAction(nameof(Post), new { id = comments.ArticleId});
+                        return new ApiResponse(){Message = "邮箱错误~",StatusCode = 422};
                     }
-
+            
                     try
                     {
-                        SendEmail(email, content.Content, $"{comments.ArticleId}");
+                        SendEmail(email, content.Content, $"{comments.PostId}");
                     }
                     catch (Exception e)
                     {
-                        _messages.Error("邮箱错误！，无法发送邮箱信息~");
-                        return RedirectToAction(nameof(Post), new { id = comments.ArticleId});
-                        throw;
+                        return new ApiResponse(){Message = "邮箱错误~",StatusCode = 422};
                     }
                 }
-                _messages.Success("评论成功~");
             }
             catch (Exception e)
             {
                 _messages.Error("邮箱错误！，无法发送邮箱信息~");
                 throw;
             }
-            return RedirectToAction(nameof(Post), new { id = comments.ArticleId});
+            return new ApiResponse(){Data = GetHtml(content),StatusCode = 200,Message = "评论成功~"};
         }
-
-        public static void SendEmail(string email,string content,string link)
+        #region MyRegion
+        /*
+        private static void SendEmail(string email,string content,string link)
         {
             try
             {
@@ -202,6 +232,56 @@ namespace Personalblog.Controllers
                 Console.WriteLine(e.Message);
                 throw;
             }
+        }*/
+        #endregion
+        private static void SendEmail(string email, string content, string link)
+        {
+            try
+            {
+                // 创建邮件
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("ZY", "1767992919@qq.com"));
+                message.To.Add(new MailboxAddress("", email));
+                message.Subject = "ZY知识库评论通知";
+                message.Body = new TextPart("html")
+                {
+                    Text = $"您收到来自ZY知识库评论通知，内容如下：{content}<br>点击跳转：<a href='https://pljzy.top/blog/post/{link}.html'>文章地址</a>"
+                };
+                // 发送邮件
+                using (var client = new SmtpClient())
+                {
+                    client.Connect("smtp.qq.com", 465, true);
+                    client.Authenticate("1767992919@qq.com", "wnfgbdddlsmcbfbj");
+                    client.Send(message);
+                    client.Disconnect(true);
+                }
+                Console.WriteLine("邮件已成功发送！");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
+            }
+        }
+
+        public string GetHtml(Comments comments)
+        {
+            string html = $@"
+        <div class=""feedbackItem"">
+            <div class=""feedbackListSubtitle feedbackListSubtitle-louzhu"">
+                <div class=""feedbackManage"">
+                    <span class=""comment_actions"">
+                        <a class=""comment_actions_link"" href=""#reply"" onclick=""Reply({comments.CommentId},'{comments.Name}')"" id=""Reply"">回复</a>
+                    </span>
+                </div>
+                <span class=""comment_date"">{comments.CreateTime}</span>
+                <span class=""a_comment_author_5166961"">{comments.Name}</span>
+            </div>
+            <div class=""feedbackCon"">
+                {comments.Content}
+            </div>   
+        </div>";
+            return html;
         }
     }
 }

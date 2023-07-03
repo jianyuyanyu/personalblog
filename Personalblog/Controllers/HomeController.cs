@@ -7,8 +7,11 @@ using PersonalblogServices.FPost;
 using PersonalblogServices.FtopPost;
 using PersonalblogServices.Links;
 using System.Diagnostics;
-using Personalblog.Services;
+using Personalblog.Model.Entitys;
+using PersonalblogServices.Articels;
 using PersonalblogServices.Notice;
+using X.PagedList;
+using Messages = Personalblog.Contrib.SiteMessage.Messages;
 
 namespace Personalblog.Controllers
 {
@@ -21,10 +24,11 @@ namespace Personalblog.Controllers
         private readonly IFPostService _PostService;
         private readonly ILinkService _linkService;
         private readonly INoticeService _noticeService;
+        private readonly IArticelsService _articelsService;
         public HomeController(ILogger<HomeController> logger,IFPhotoService fPhotoService,
             IFCategoryService fCategoryService,ITopPostService topPostService,
             IFPostService fPostService,ILinkService linkService,
-            INoticeService noticeService)
+            INoticeService noticeService,IArticelsService articelsService)
         {
             _logger = logger;
             _fPhotoService = fPhotoService;
@@ -33,6 +37,7 @@ namespace Personalblog.Controllers
             _PostService = fPostService;
             _linkService = linkService;
             _noticeService = noticeService;
+            _articelsService = articelsService;
         }
 
         public async Task<IActionResult> Index()
@@ -42,11 +47,32 @@ namespace Personalblog.Controllers
                 FeaturedPhotos = _fPhotoService.GetFeaturePhotos(),
                 FeaturedCategories = _fCategoryService.GetFeaturedCategories(),
                 TopPost = _TopPostService.GetTopOnePost(),
-                FeaturedPosts = _PostService.GetFeaturedPosts(),
-                Links = _linkService.GetAll(),
-                Notices = await _noticeService.GetAllAsync()
+                FeaturedPosts = await _PostService.GetFeaturedPostsAsync(new QueryParameters
+                {
+                    Page = 1,
+                    PageSize = 8,
+                }),
+                Links = await _linkService.GetAll(),
+                Notices = await _noticeService.GetAllAsync(),
+                FirstLastPost =await _articelsService.FirstLastPostAsync(),
+                // MaxPost = await _articelsService.MaxPostAsync()
             };
             return View(homeView);
+        }
+
+        public async Task<IActionResult> GetFeaturedPosts(int page = 2, int pageSize = 8)
+        {
+            IPagedList<Post> data = await _PostService.GetFeaturedPostsAsync(new QueryParameters
+            {
+                Page = page,
+                PageSize = pageSize,
+            });
+            if (data.Count == 0) {
+                // 没有更多数据了，返回错误
+                return NoContent();
+            }
+        
+            return PartialView("Widgets/FeaturedPostCard", data);
         }
 
         public IActionResult Privacy()

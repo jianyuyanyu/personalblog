@@ -106,7 +106,7 @@ namespace Personalblog.Apis
             [FromServices] ICategoryService categoryService)
         {
             var post = _mapper.Map<Post>(dto);
-            var category = categoryService.GetById(dto.CategoryId);
+            var category =await categoryService.GetById(dto.CategoryId);
             if (category == null) return ApiResponse.BadRequest($"分类 {dto.CategoryId} 不存在！");
 
             post.Id = GuidUtils.GuidTo16String();

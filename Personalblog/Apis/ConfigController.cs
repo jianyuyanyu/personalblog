@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Personalblog.Model.Entitys;
 using Personalblog.Services;
 using PersonalblogServices.Response;
@@ -8,6 +9,7 @@ namespace Personalblog.Apis
     /// <summary>
     /// 配置中心
     /// </summary>
+    [Authorize]
     [ApiController]
     [Route("Api/[controller]")]
     public class ConfigController : ControllerBase

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using X.PagedList;
 
 namespace Personalblog.Model.ViewModels
 {
@@ -28,10 +29,18 @@ namespace Personalblog.Model.ViewModels
         /// <summary>
         /// 推荐文章
         /// </summary>
-        public List<Post>? FeaturedPosts { get; set; }
+        public IPagedList<Post>? FeaturedPosts { get; set; }
         /// <summary>
         /// 网站通知
         /// </summary>
         public List<Notice>? Notices { get; set; }
+        /// <summary>
+        /// 最新 最旧
+        /// </summary>
+        public List<Post>? FirstLastPost { get; set; }
+        /// <summary>
+        /// 阅读最多
+        /// </summary>
+        public Post? MaxPost { get; set; }
     }
 }

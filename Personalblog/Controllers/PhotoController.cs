@@ -3,6 +3,7 @@ using Personalblog.Contrib.SiteMessage;
 using Personalblog.Model.Entitys;
 using Personalblog.Model.ViewModels;
 using Personalblog.Services;
+using Messages = Personalblog.Contrib.SiteMessage.Messages;
 
 namespace Personalblog.Controllers
 {
@@ -16,11 +17,11 @@ namespace Personalblog.Controllers
             _messages = messages;
         }
 
-        public IActionResult Index(long? yes,int page = 1,int pageSize=10)
+        public async Task<IActionResult> Index(long? yes,int page = 1,int pageSize=10)
         {
             PhotographyViewModel photography = new PhotographyViewModel()
             {
-                photos = _photoService.GetPageList(page, pageSize)
+                photos = await _photoService.GetPageList(page, pageSize)
             };
             return View(photography);
         }

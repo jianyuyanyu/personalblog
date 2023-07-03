@@ -40,7 +40,7 @@ namespace Personalblog.Services
                 _accessor.HttpContext!,
                 nameof(BlogController.List),
                 "Blog",
-                new { categoryId = c.Id }
+                new { categoryId = c.Id },"https"
                 ),
                 tags = new List<string> { c.Posts.Count.ToString() },
                 nodes = GetNodes(c.Id)

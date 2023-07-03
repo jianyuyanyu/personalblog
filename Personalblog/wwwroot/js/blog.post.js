@@ -31,16 +31,16 @@ $(function () {
  * @deprecated 现在不需要了，直接在后端处理
  * @param postId
  */
-function procImages(postId) {
-    $.get(`/Api/BlogPost/${postId}/`, function (res) {
-        console.log(res)
-        for (const imgElem of document.querySelectorAll('.post-content img')) {
-            let originSrc = imgElem.getAttribute('src')
-            // let newSrc = `/assets/blog/${res.data.path}/${originSrc}`
-            let newSrc = `/media/blog/${res.data.id}/${originSrc}`
-            console.log('originSrc', originSrc)
-            console.log('newSrc', newSrc)
-            imgElem.setAttribute('src', newSrc)
-        }
-    })
-}
+// function procImages(postId) {
+//     $.get(`/Api/BlogPost/${postId}/`, function (res) {
+//         console.log(res)
+//         for (const imgElem of document.querySelectorAll('.post-content img')) {
+//             let originSrc = imgElem.getAttribute('src')
+//             // let newSrc = `/assets/blog/${res.data.path}/${originSrc}`
+//             let newSrc = `/media/blog/${res.data.id}/${originSrc}`
+//             console.log('originSrc', originSrc)
+//             console.log('newSrc', newSrc)
+//             imgElem.setAttribute('src', newSrc)
+//         }
+//     })
+// }

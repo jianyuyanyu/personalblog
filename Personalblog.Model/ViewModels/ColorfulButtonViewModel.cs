@@ -13,5 +13,6 @@
         public string Name { get; set; }
         public string Url { get; set; } = "#";
         public string Target { get; set; } = LinkTarget.Blank;
+        public string? Description { get; set; }
     }
 }

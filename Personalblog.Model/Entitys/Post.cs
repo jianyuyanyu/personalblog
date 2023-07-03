@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Personalblog.Model.ViewModels.Arc;
 
 namespace Personalblog.Model.Entitys
 {
@@ -49,5 +50,10 @@ namespace Personalblog.Model.Entitys
         /// 导航属性
         /// </summary>
         public Category? Categories { get; set; }
+        public List<Comments> Comments { get; set; }
+        /// <summary>
+        /// 浏览量
+        /// </summary>
+        public int ViewCount { get; set; }
     }
 }

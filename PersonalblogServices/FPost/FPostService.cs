@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Personalblog.Model.ViewModels;
+using X.PagedList;
 
 namespace PersonalblogServices.FPost
 {
@@ -23,9 +25,36 @@ namespace PersonalblogServices.FPost
             return _myDbContext.SaveChanges();
         }
 
-        public List<Post> GetFeaturedPosts()
+        public async Task<bool> UpdateSortOrderAsync(int featuredPostId, int newSortOrder)
         {
-            return _myDbContext.featuredPosts.Include(a => a.Post.Categories).Select(a => a.Post).ToList();
+            var fPost = await _myDbContext.featuredPosts.FindAsync(featuredPostId);
+            if (fPost != null)
+            {
+                fPost.SortOrder = newSortOrder;
+                await _myDbContext.SaveChangesAsync();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 这个查询语句会先加载 featuredPosts 表，然后使用 Include 方法加载文章表 Post，并使用 ThenInclude 方法一次性加载文章的分类和评论。
+        ///注意，我们使用了两个 Include 方法来加载不同的关联表，并使用 ThenInclude 方法来指定要加载的关联表的属性。这样可以避免 EF Core 生成多个 SQL 查询，从而提高查询效率。
+        ///在查询结果中，每个文章对象都包含了它的分类和评论。
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IPagedList<Post>> GetFeaturedPostsAsync(QueryParameters param)
+        {
+            // return _myDbContext.featuredPosts.Include(a => a.Post.Categories).Select(a => a.Post).ToList();
+            var posts =await _myDbContext.featuredPosts
+                .OrderBy(o => o.SortOrder)
+                .Include(fp => fp.Post)
+                .ThenInclude(p => p.Categories)
+                .Include(fp => fp.Post)
+                .ThenInclude(p => p.Comments)
+                .Select(fp => fp.Post)
+                .ToPagedListAsync(param.Page, param.PageSize);
+            return posts;
         }
 
         public FeaturedPost GetFeatures(int id)
@@ -34,9 +63,9 @@ namespace PersonalblogServices.FPost
                 .Include(a => a.Post).First();
         }
 
-        public List<FeaturedPost> GetList()
+        public async Task<List<FeaturedPost>> GetListAsync()
         {
-            return _myDbContext.featuredPosts.Include(a => a.Post.Categories).ToList();
+            return await _myDbContext.featuredPosts.Include(a => a.Post.Categories).OrderBy(o => o.SortOrder).ToListAsync();
         }
     }
 }

@@ -9,6 +9,12 @@ namespace PersonalblogServices.Links
 {
     public interface ILinkService
     {
-        List<Link> GetAll(bool onlyVisible = true);
+        Task<List<Link>> GetAll(bool onlyVisible = true);
+        Task<Link?> GetById(int id);
+        Task<Link?> GetByName(string name);
+        Task<bool> HasId(int id);
+        Task<Link> AddOrUpdate(Link item);
+        Task<Link?> SetVisibility(int id, bool visible);
+        Task<int> DeleteById(int id);
     }
 }

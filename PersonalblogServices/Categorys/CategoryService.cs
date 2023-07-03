@@ -6,10 +6,10 @@ using Personalblog.Model;
 using Personalblog.Model.Entitys;
 using Personalblog.Model.ViewModels;
 using Personalblog.Model.ViewModels.Categories;
-using Personalblog;
 
 namespace PersonalblogServices.Categorys
 {
+    //后期将推荐分类方法转移到FCategory中去
     public class CategoryService:ICategoryService
     {
         private readonly MyDbContext _myDbContext;
@@ -43,9 +43,9 @@ namespace PersonalblogServices.Categorys
             }
             return data;
         }
-        public Category? GetById(int id)
+        public async Task<Category?> GetById(int id)
         {
-            return _myDbContext.categories.FirstOrDefault(a => a.Id == id);
+            return await _myDbContext.categories.FirstOrDefaultAsync(a => a.Id == id);
         }
         public FeaturedCategory AddOrUpdateFeaturedCategory(Category category, FeaturedCategoryCreationDto dto)
         {
@@ -133,6 +133,28 @@ namespace PersonalblogServices.Categorys
         public Category GetbyParentname(string name, int id)
         {
             return _myDbContext.categories.Where(a => a.Name == name && a.ParentId == id).FirstOrDefault();
+        }
+
+        public async Task<bool> CategoryGetPost(int id)
+        {
+             var post = await _myDbContext.posts.Where(p => p.CategoryId == id).AnyAsync();
+             var category = await _myDbContext.categories.Where(c => c.ParentId == id).AnyAsync();
+             if (post || category)
+                 return true;
+             else return false;
+        }
+
+        public async Task<int> DeleteAsync(Category category)
+        {
+             _myDbContext.categories.Remove(category);
+             return await _myDbContext.SaveChangesAsync();
+        }
+
+        public async Task<Category> Update(Category category)
+        {
+            _myDbContext.categories.Update(category);
+            await _myDbContext.SaveChangesAsync();
+            return category;
         }
     }
 }

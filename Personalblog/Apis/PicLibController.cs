@@ -9,9 +9,11 @@ namespace Personalblog.Apis
     public class PicLibController : Controller
     {
         private readonly PiCLibService _service;
-        public PicLibController(PiCLibService service)
+        private readonly IConfiguration _configuration;
+        public PicLibController(PiCLibService service,IConfiguration configuration)
         {
             _service = service;
+            _configuration = configuration;
         }
         private static async Task<IActionResult> GenerateImageResponse(Image image, IImageFormat format)
         {
@@ -31,6 +33,19 @@ namespace Personalblog.Apis
         {
             var (image,format) = await _service.GetRandomImageAsync(width,height);
             return await GenerateImageResponse(image,format);
+        }
+        [HttpGet("RandomTop/{seed}/")]
+        public async Task<IActionResult> GetRandomImageTop(string seed)
+        {
+            var (image,format) = await _service.GetRandomImageAsyncTop(seed);
+            return await GenerateImageResponse(image,format);
+        }
+
+        [HttpGet]
+        public async Task<string> GetRandomImageTopQiliu(string? seed)
+        {
+            string path = await _service.GetQiliuImageAsyncTop();
+            return path;
         }
         /// <summary>
         /// 指定尺寸随机图片 (带初始种子)

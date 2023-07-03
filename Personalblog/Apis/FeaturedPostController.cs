@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Personalblog.Model.Entitys;
 using PersonalblogServices.FPost;
 using PersonalblogServices.Response;
@@ -8,6 +9,7 @@ namespace Personalblog.Apis
     /// <summary>
     /// 推荐博客
     /// </summary>
+    [Authorize]
     [ApiController]
     [Route("Api/[controller]")]
     public class FeaturedPostController : ControllerBase
@@ -18,9 +20,9 @@ namespace Personalblog.Apis
             _fpostService = fpostService;
         }
         [HttpGet]
-        public ApiResponse<List<FeaturedPost>> GetList()
+        public async Task<ApiResponse<List<FeaturedPost>>> GetList()
         {
-            return new ApiResponse<List<FeaturedPost>>(_fpostService.GetList());
+            return new ApiResponse<List<FeaturedPost>>(await _fpostService.GetListAsync());
         }
 
         [HttpGet("{id:int}")]
@@ -36,6 +38,21 @@ namespace Personalblog.Apis
             if (item == null) return ApiResponse.NotFound($"推荐博客记录 {id} 不存在");
             var rows = _fpostService.Delete(item);
             return ApiResponse.Ok($"deleted {rows} rows.");
+        }
+        [HttpPut("{id:int}/{newSortOrder:int}")]
+        public async Task<ApiResponse> UpdateSort(int id, int newSortOrder)
+        {
+            try
+            {
+                var result = await _fpostService.UpdateSortOrderAsync(id, newSortOrder);
+                if (result)
+                    return ApiResponse.Ok("修改排序成功！");
+                return ApiResponse.Error("修改排序失败");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse.Error("发生错误：" + ex.Message);
+            }
         }
     }
 }
