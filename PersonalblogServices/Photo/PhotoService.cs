@@ -22,9 +22,9 @@ namespace PersonalblogServices
         }
 
 
-        public async Task<List<Photo>> GetAllPhotos()
+        public List<Photo> GetAllPhotos()
         {
-            return await _myDbContext.photos.OrderByDescending(p => p.CreateTime).ToListAsync();
+            return _myDbContext.photos.OrderByDescending(p => p.CreateTime).ToList();
         }
 
         public IPagedList<Photo> GetPagedList(int page = 1, int pageSize = 10)
@@ -40,7 +40,7 @@ namespace PersonalblogServices
         public Photo GetRandomPhoto()
         {
             var items = _myDbContext.photos.ToList();
-            return items.Count == 0 ? null : items[Random.Shared.Next(items.Count)];
+            return items.Count == 0 ? null : items[new Random().Next(items.Count)];
         }
 
         public void InsertPhoto(Photo photo)

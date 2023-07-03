@@ -119,8 +119,7 @@ namespace Personalblog.Services
                 Path = "",
                 CreationTime = DateTime.Now,
                 LastUpdateTime = DateTime.Now,
-                CategoryId = CategoryId,
-                ViewCount = 0
+                CategoryId = CategoryId
             };
             // 处理文章正文内容
             var assetsPath = Path.Combine(_environment.WebRootPath, "media", "blog");

@@ -21,7 +21,7 @@ namespace PersonalblogServices
         /// 查询所有图片
         /// </summary>
         /// <returns></returns>
-        Task<List<Photo>> GetAllPhotos();
+        List<Photo> GetAllPhotos();
         /// <summary>
         /// 根据id查询单张图片详情
         /// </summary>

@@ -14,7 +14,7 @@ public class Comments
     /// <summary>
     /// 评论所属文章的ID（外键）
     /// </summary>
-    public string PostId  { get; set; }
+    public string ArticleId { get; set; }
     /// <summary>
     /// 父评论的ID（用于回复评论）
     /// </summary>

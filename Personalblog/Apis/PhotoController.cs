@@ -10,7 +10,6 @@ namespace Personalblog.Apis
     /// <summary>
     /// 摄影
     /// </summary>
-    [Authorize]
     [ApiController]
     [Route("Api/[controller]")]
     [ApiExplorerSettings(GroupName = "blog")]
@@ -22,9 +21,9 @@ namespace Personalblog.Apis
             _photoService = photoService;
         }
         [HttpGet]
-        public async Task<ApiResponsePaged<Photo>> GetList(int page = 1, int pageSize = 10)
+        public ApiResponsePaged<Photo> GetList(int page = 1, int pageSize = 10)
         {
-            var paged = await _photoService.GetPageList(page, pageSize);
+            var paged = _photoService.GetPageList(page, pageSize);
             return new ApiResponsePaged<Photo>
             {
                 Pagination = paged.ToPaginationMetadata(),

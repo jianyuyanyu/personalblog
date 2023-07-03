@@ -4,18 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Personalblog.Model.ViewModels;
-using X.PagedList;
 
 namespace PersonalblogServices.FPost
 {
     public interface IFPostService
     {
-        Task<IPagedList<Post>> GetFeaturedPostsAsync(QueryParameters param);
+        List<Post> GetFeaturedPosts();
         FeaturedPost GetFeatures(int id);
-        Task<List<FeaturedPost>> GetListAsync();
+        List<FeaturedPost> GetList();
         int Delete(FeaturedPost featured);
-        //排序
-        Task<bool> UpdateSortOrderAsync(int featuredPostId, int newSortOrder);
     }
 }

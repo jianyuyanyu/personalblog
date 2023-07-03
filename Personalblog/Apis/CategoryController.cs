@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Personalblog.Model.Entitys;
 using Personalblog.Model.ViewModels.Categories;
@@ -9,16 +8,13 @@ using PersonalblogServices.Response;
 namespace Personalblog.Apis
 {
     [ApiController]
-    [Authorize]
     [Route("Api/[controller]")]
     public class CategoryController : Controller
     {
         private readonly ICategoryService _categoryService;
-        private readonly IMapper _mapper;
-        public CategoryController(ICategoryService categoryService,IMapper mapper)
+        public CategoryController(ICategoryService categoryService)
         {
             _categoryService = categoryService;
-            _mapper = mapper;
         }
         [AllowAnonymous]
         [HttpGet("[action]")]
@@ -34,9 +30,9 @@ namespace Personalblog.Apis
         /// <param name="dto">推荐信息 <see cref="FeaturedCategoryCreationDto"/></param>
         /// <returns></returns>
         [HttpPost("{id:int}/[action]")]
-        public async Task<ApiResponse<FeaturedCategory>> SetFeatured(int id, [FromBody] FeaturedCategoryCreationDto dto)
+        public ApiResponse<FeaturedCategory> SetFeatured(int id, [FromBody] FeaturedCategoryCreationDto dto)
         {
-            var item =await _categoryService.GetById(id);
+            var item = _categoryService.GetById(id);
             return item == null
                 ? ApiResponse.NotFound($"分类 {id} 不存在")
                 : new ApiResponse<FeaturedCategory>(_categoryService.AddOrUpdateFeaturedCategory(item, dto));
@@ -53,9 +49,9 @@ namespace Personalblog.Apis
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost("{id:int}/[action]")]
-        public async Task<ApiResponse> SetVisible(int id)
+        public ApiResponse SetVisible(int id)
         {
-            var item =await _categoryService.GetById(id);
+            var item = _categoryService.GetById(id);
             if (item == null) return ApiResponse.NotFound($"分类 {id} 不存在");
             var rows = _categoryService.SetVisibility(item, true);
             return ApiResponse.Ok($"affect {rows} rows.");
@@ -66,9 +62,9 @@ namespace Personalblog.Apis
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost("{id:int}/[action]")]
-        public  async Task<ApiResponse> SetInvisible(int id)
+        public ApiResponse SetInvisible(int id)
         {
-            var item =await _categoryService.GetById(id);
+            var item = _categoryService.GetById(id);
             if (item == null) return ApiResponse.NotFound($"分类 {id} 不存在");
             var rows = _categoryService.SetVisibility(item, false);
             return ApiResponse.Ok($"affect {rows} rows.");
@@ -79,41 +75,12 @@ namespace Personalblog.Apis
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpPost("{id:int}/[action]")]
-        public async Task<ApiResponse> CancelFeatured(int id)
+        public ApiResponse CancelFeatured(int id)
         {
-            var item =await _categoryService.GetById(id);
+            var item = _categoryService.GetById(id);
             if (item == null) return ApiResponse.NotFound($"分类 {id} 不存在");
             var rows = _categoryService.DeleteFeaturedCategory(item);
             return ApiResponse.Ok($"delete {rows} rows.");
-        }
-
-        [HttpDelete("{id:int}")]
-        public async Task<ApiResponse> Delete(int id)
-        {
-            var item = await _categoryService.GetById(id);
-            if (item == null) return ApiResponse.NotFound();
-
-            if (await _categoryService.CategoryGetPost(id))
-                return ApiResponse.BadRequest("所选分类下有文章或者分类有二级目录，不能删除！");
-
-            var rows =await _categoryService.DeleteAsync(item);
-            return ApiResponse.Ok($"已删除 {rows} 条数据");
-        }
-
-        [HttpPut("{id:int}")]
-        public async Task<ApiResponse<Category>> Update(int id, [FromBody] CategoryCreationDto dto)
-        {
-            var item = await _categoryService.GetById(id);
-            if (item == null) return ApiResponse.NotFound();
-
-            item = _mapper.Map(dto, item);
-            return new ApiResponse<Category>(await _categoryService.Update(item));
-        }
-        [HttpGet("{id:int}")]
-        public async Task<ApiResponse<Category>> GetCategory(int id)
-        {
-            var item = await _categoryService.GetById(id);
-            return new ApiResponse<Category>(item);
         }
     }
 }

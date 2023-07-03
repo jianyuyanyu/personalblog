@@ -1,5 +1,4 @@
 ﻿@using Personalblog.Model.ViewModels;
-@using Personalblog.Migrate
 @model ColorfulButtonViewModel
 
 @{
@@ -16,9 +15,6 @@
     var btnColor = colorList[rnd.Next(0, colorList.Length)];
 }
 
-@* <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="@Model.Description"> *@
-@*     <button class="btn btn-sm @btnColor mb-1" type="button">@Model.Name</button> *@
-@* </span> *@
-<a href="@Model.Url" role="button" class="btn btn-sm @btnColor mb-1" target="@Model.Target" data-bs-toggle="tooltip" data-bs-title="@Model.Description.Limit(25)">
+<a href="@Model.Url" role="button" class="btn btn-sm @btnColor mb-1" target="@Model.Target">
     @Model.Name
 </a>

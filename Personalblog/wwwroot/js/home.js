@@ -1,4 +1,4 @@
-const HEIGHT = 400
+﻿const HEIGHT = 400
 
 let homeApp = new Vue({
     el: '#vue-app',
@@ -8,9 +8,7 @@ let homeApp = new Vue({
         poemSimple: '',
         chartTypes: ['bubble', 'bar'],
         currentChartTypeIndex: 0,
-        currentChart: null,
-        imageSrc:'',
-        isLoading: true
+        currentChart: null
     },
     computed: {
         chartElem() {
@@ -20,25 +18,11 @@ let homeApp = new Vue({
     created() {
         this.loadPoem()
         this.loadHitokoto()
-        this.getRandomImage()
     },
     mounted() {
         if (CHART_VISIBLE === true) this.loadChart()
     },
     methods: {
-        getRandomImage() {
-            const img = document.getElementById('random-image')
-            fetch(`/PicLib/GetRandomImageTopQiliu`)
-                .then(res => res.json())
-                .then(data => {
-                    this.imageSrc = data.data
-                    this.isLoading = false
-                })
-                .catch(() => {
-                    console.log('Error retrieving random image.')
-                    this.isLoading = false
-                })
-        },
         loadPoem() {
             fetch('/Api/DataAcq/Poem')
                 .then(res => res.json()).then(res => this.poemSimple = res.data)
@@ -163,9 +147,3 @@ let homeApp = new Vue({
         }
     }
 })
-
-
-// Enable tooltips
-console.log('Enable tooltips')
-const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))

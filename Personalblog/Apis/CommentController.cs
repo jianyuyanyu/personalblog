@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Personalblog.Model.Entitys;
 using Personalblog.Model.ViewModels.QueryFilters;
 using PersonalblogServices.CommentService;
@@ -24,7 +23,7 @@ public class CommentController : ControllerBase
         var pageList = _commentservice.GetPagedCommentlist(param);
         return new ApiResponsePaged<Comments>(pageList);
     }
-    [Authorize]
+
     [HttpDelete("{cid:int}")]
     public async Task<ApiResponse> DelComent(int cid)
     {

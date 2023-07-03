@@ -10,11 +10,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using X.PagedList;
 using System.Net;
-using Personalblog.Model.Extensions.Markdown;
 using Personalblog.Utils;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Processing;
 
 namespace Personalblog.Services
 {
@@ -48,8 +44,7 @@ namespace Personalblog.Services
                 LastUpdateTime = a.LastUpdateTime,
                 Path = a.Path,
                 Summary = a.Summary,
-                Title = a.Title,
-                ViewCount = a.ViewCount
+                Title = a.Title
             });
             //分类过滤
             if(param.CategoryId != 0)
@@ -133,7 +128,6 @@ namespace Personalblog.Services
             // 是新文章的话，先保存到数据库
             if(await _myDbContext.posts.Where(a=>a.Id==post.Id).CountAsync() == 0)
             {
-                post.ViewCount = 0;
                 await _myDbContext.posts.AddAsync(post);
                 await _myDbContext.SaveChangesAsync();
             }
@@ -212,70 +206,43 @@ namespace Personalblog.Services
             var filename = file.FileName;
             var fileRelativePath = Path.Combine("media", "blog", post.Id!, filename);
             var savePath = Path.Combine(_environment.WebRootPath, fileRelativePath);
-            // 生成临时文件名
-            var tempFilename = $"{GuidUtils.GuidTo16String()}{Path.GetExtension(filename)}";
-            var tempPath = Path.Combine(_environment.WebRootPath, "temp", tempFilename);
-
-            using (var fs = new FileStream(tempPath, FileMode.Create))
+            if (File.Exists(savePath))
+            {
+                // 上传文件重名处理
+                var newFilename = $"{Path.GetFileNameWithoutExtension(filename)}-{GuidUtils.GuidTo16String()}{Path.GetExtension(filename)}";
+                fileRelativePath = Path.Combine("media", "blog", post.Id!, newFilename);
+                savePath = Path.Combine(_environment.WebRootPath, fileRelativePath);
+            }
+            using (var fs = new FileStream(savePath, FileMode.Create))
             {
                 file.CopyTo(fs);
             }
-
-            // 压缩图片
-            using (var image = Image.Load(tempPath))
-            {
-                var encoder = new JpegEncoder()
-                {
-                    Quality = 70 // 设置压缩质量
-                };
-                image.Save(savePath,encoder);
-            }
-
-            // 删除临时文件
-            File.Delete(tempPath);
-
             return Path.Combine(Host, fileRelativePath);
         }
         /// <summary>
-        /// 图片压缩
+        /// 压缩图片
         /// </summary>
-        /// <param name="imagePath">原路径</param>
-        /// <param name="outputPath">新路径</param>
-        /// <param name="quality">压缩质量 1-100 数值越低压缩越多</param>
-        public void CompressImage(string imagePath, string outputPath, int quality)
+        /// <param name="inputImagePath">原图片路径</param>
+        /// <param name="outputDirectory">输出目录</param>
+        /// <param name="quality">压缩质量</param>
+        public static void CompressImage(string inputImagePath, string outputDirectory, int quality)
         {
-            using var image = Image.Load(imagePath);
-            var encoder = new JpegEncoder()
+            // 加载原始图片
+            using var image = SixLabors.ImageSharp.Image.Load(inputImagePath);
+
+            // 设置压缩选项
+            var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
             {
-                Quality = quality // 设置压缩质量
+                Quality = quality
             };
-            image.Save(outputPath, encoder);
+
+            // 生成输出图片路径
+            string fileName = Path.GetFileName(inputImagePath);
+            //string outputImagePath = Path.Combine(outputDirectory, fileName);
+
+            // 保存压缩后的图片
+            using var outputStream = new FileStream(outputDirectory, FileMode.Create);
+            image.Save(outputStream, encoder);
         }
-        public static string GetContentHtml(Post post) {
-            var pipeline = new MarkdownPipelineBuilder()
-                .UseAdvancedExtensions()
-                .UseBootstrap5()
-                .Build();
-            return Markdown.ToHtml(post.Content ?? "", pipeline);
-        }
-        // public static void CompressImage(string inputImagePath, string outputDirectory, int quality)
-        // {
-        //     // 加载原始图片
-        //     using var image = SixLabors.ImageSharp.Image.Load(inputImagePath);
-        //
-        //     // 设置压缩选项
-        //     var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
-        //     {
-        //         Quality = quality
-        //     };
-        //
-        //     // 生成输出图片路径
-        //     string fileName = Path.GetFileName(inputImagePath);
-        //     //string outputImagePath = Path.Combine(outputDirectory, fileName);
-        //
-        //     // 保存压缩后的图片
-        //     using var outputStream = new FileStream(outputDirectory, FileMode.Create);
-        //     image.Save(outputStream, encoder);
-        // }
     }
 }

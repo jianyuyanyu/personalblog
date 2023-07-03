@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
-using Personalblog.Model.ViewModels.Arc;
 
 namespace Personalblog.Model
 {
@@ -26,14 +25,9 @@ namespace Personalblog.Model
         public DbSet<Link> links { get; set; }
         public DbSet<Comments> comments { get; set; }
         public DbSet<Notice> notice { get; set; }
-        public DbSet<LinkExchange> LinkExchanges { get; set; }
-        public DbSet<Messages> Messages { get; set; }
-        public DbSet<Replies> Replies { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Post>()
-                .HasIndex(p => p.ViewCount);
             modelBuilder.ApplyConfigurationsFromAssembly(
                 this.GetType().Assembly);
         }

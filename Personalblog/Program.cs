@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -21,11 +20,7 @@ using PersonalblogServices.Links;
 using SixLabors.ImageSharp.Web.DependencyInjection;
 using StackExchange.Profiling.Storage;
 using System.Text;
-using AspNetCoreRateLimit;
-using Microsoft.Extensions.Caching.Memory;
-using PersonalblogServices.ArticelArc;
 using PersonalblogServices.CommentService;
-using PersonalblogServices.Messages;
 using PersonalblogServices.Notice;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,29 +33,27 @@ builder.Services.AddControllersWithViews().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 });
 builder.WebHost.UseUrls("http://*:7031");
-
-
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
+//���ݿ�����
 builder.Services.AddDbContext<MyDbContext>(opt =>
 {
     //opt.UseMySql(connStr, new MySqlServerVersion(new Version(5, 7, 40)));   
     string connStr = "Data Source=app.db";
     opt.UseSqlite(connStr);
 });
-
+//����
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy",
         opt => opt.AllowAnyOrigin()
         .AllowAnyHeader()
         .AllowAnyMethod()
-        .WithExposedHeaders("http://localhost:8080/","http://154.9.25.73:8031"));
+        .WithExposedHeaders("http://localhost:8080/"));
 });
-
+//ע��AotoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperConfigs));
-
+//�����ע��
 builder.Services.AddTransient<IArticelsService, ArticelsService>();
 builder.Services.AddTransient<IPhotoService, PersonalblogServices.PhotoService>();
 builder.Services.AddTransient<IFPhotoService, FPhotoService>();
@@ -70,14 +63,11 @@ builder.Services.AddTransient<IFPostService, FPostService>();
 builder.Services.AddTransient<ILinkService, LinkService>();
 builder.Services.AddTransient<Icommentservice, commentservice>();
 builder.Services.AddTransient<INoticeService, NoticeService>();
-builder.Services.AddTransient<ILinkExchangeService, LinkExchangeService>();
-builder.Services.AddTransient<IMessagesService, MessagesService>();
-builder.Services.AddTransient<IArcService, ArcService>();
 
 builder.Services.AddHttpContextAccessor();
-
+// ע�� IHttpClientFactory���ο���https://docs.microsoft.com/zh-cn/dotnet/core/extensions/http-client
 builder.Services.AddHttpClient();
-
+//ע���Զ������
 builder.Services.AddScoped<ICategoryService, PersonalblogServices.Categorys.CategoryService>();
 builder.Services.AddScoped<Personalblog.Services.PhotoService>();
 builder.Services.AddScoped<AuthService>();
@@ -91,33 +81,35 @@ builder.Services.AddSingleton<CommonService>();
 builder.Services.AddSingleton<PiCLibService>();
 builder.Services.AddSingleton<CrawlService>();
 
-
+//ע��jwt����
 builder.Services.Configure<SecuritySetting>(builder.Configuration.GetSection(nameof(SecuritySetting)));
-
+//ע��Miniprofiler
 builder.Services.AddMiniProfiler(options =>
 {
-
+    //���ʵ�ַ·�ɸ�Ŀ¼��Ĭ��Ϊ��/mini-profiler-resources
     options.RouteBasePath = "/profiler";
-
+    //���ݻ���ʱ��
     (options.Storage as MemoryCacheStorage).CacheDuration = TimeSpan.FromMinutes(60);
-
+    //sql��ʽ������
     options.SqlFormatter = new StackExchange.Profiling.SqlFormatters.InlineFormatter();
-
+    //�������Ӵ򿪹ر�
     options.TrackConnectionOpenClose = true;
-
+    //����������ɫ����;Ĭ��ǳɫ
     options.ColorScheme = StackExchange.Profiling.ColorScheme.Dark;
-
+    //.net core 3.0���ϣ���MVC���������з���
     options.EnableMvcFilterProfiling = true;
-
+    //����ͼ���з���
     options.EnableMvcViewProfiling = true;
 }).AddEntityFramework();
-
+//���jwt
 builder.Services.AddAuthentication(options => {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
     .AddJwtBearer(options => {
+        // �����õ�����֮ǰ����õ�������
         var secSettings = builder.Configuration.GetSection(nameof(SecuritySetting)).Get<SecuritySetting>();
+        // ����jwt token�ĸ�����Ϣ������֤
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = true,
@@ -130,43 +122,9 @@ builder.Services.AddAuthentication(options => {
             ClockSkew = TimeSpan.Zero
         };
     });
-
+//ͼƬ����ͼ
+// ע�����
 builder.Services.AddImageSharp();
-builder.Services.AddOptions();
-
-// 添加Session服务
-builder.Services.AddSession();
-
-//注册服务
-builder.Services.AddRateLimit(builder.Configuration);
-builder.Services.AddMemoryCache();
-
-// //注入Miniprofiler
-// builder.Services.AddMiniProfiler(options =>
-// {
-//     //访问地址路由根目录；默认为：/mini-profiler-resources
-//     options.RouteBasePath = "/profiler";
-//     //数据缓存时间
-//     (options.Storage as MemoryCacheStorage).CacheDuration = TimeSpan.FromMinutes(60);
-//     //sql格式化设置
-//     options.SqlFormatter = new StackExchange.Profiling.SqlFormatters.InlineFormatter();
-//     //跟踪连接打开关闭
-//     options.TrackConnectionOpenClose = true;
-//     //界面主题颜色方案;默认浅色
-//     options.ColorScheme = StackExchange.Profiling.ColorScheme.Dark;
-//     //.net core 3.0以上：对MVC过滤器进行分析
-//     options.EnableMvcFilterProfiling = true;
-//     //对视图进行分析
-//     options.EnableMvcViewProfiling = true;
-//     //控制访问页面授权，默认所有人都能访问
-//     //options.ResultsAuthorize;
-//     //要控制分析哪些请求，默认说有请求都分析
-//     //options.ShouldProfile;
-//
-//     //内部异常处理
-//     //options.OnInternalError = e => MyExceptionLogger(e);
-// }).AddEntityFramework();
-
 
 var app = builder.Build();
 
@@ -178,43 +136,33 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-
-
-// app.UseMiniProfiler();
+//�Ƿ�������
+//app.UseMiniProfiler();
 
 app.UseHttpsRedirection();
 
-// 启用Session中间件
-app.UseSession();
+app.UseStaticFiles();
 
-//添加中间件
-app.UseStaticFiles(new StaticFileOptions
-{
-    ServeUnknownFileTypes = true
-});
-
-app.UseRateLimit();
-
-
+//���������ȡ����
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-
+//�м�� ���ڱ���ӿڷ�����Ϣ
 //app.UseMiddleware<VisitRecordMiddleware>();
 app.UseVisitRecordMiddleware();
 
-
+//��������
 app.UseCors("CorsPolicy");
 
-
+// ����м��
 app.UseImageSharp();
 
 app.UseRouting();
 
 
-
+//����jwt����
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -29,9 +29,9 @@ namespace Personalblog.Services
             _photoService = photoService;   
             _myDbContext = myDbContext;
         }
-        public async Task<IPagedList<Photo>> GetPageList(int page = 1,int pageSize = 10)
+        public IPagedList<Photo> GetPageList(int page = 1,int pageSize = 10)
         {
-            return (await _photoService.GetAllPhotos()).ToPagedList(page, pageSize);
+            return _photoService.GetAllPhotos().ToPagedList(page, pageSize);
         }
         public Photo GetRandomPhoto()
         {

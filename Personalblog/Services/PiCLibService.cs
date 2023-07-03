@@ -1,8 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using Qiniu.Http;
-using Qiniu.Storage;
-using Qiniu.Util;
-using SixLabors.ImageSharp;
+﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 
@@ -16,22 +12,16 @@ namespace Personalblog.Services
         private readonly IWebHostEnvironment _environment;
         private readonly Random _random;
         public List<string> ImageList { get; set; } = new();
-        public List<string> ImageListTop { get; set; } = new();
         public PiCLibService(IWebHostEnvironment environment)
         {
             _environment = environment;
             _random = Random.Shared;
+
             var impostPath = Path.Combine(_environment.WebRootPath, "media", "yasuo");
-           var impostPathTop = Path.Combine(_environment.WebRootPath, "media", "Top");
             var root = new DirectoryInfo(impostPath);
-            var rootTop = new DirectoryInfo(impostPathTop);
             foreach(var file in root.GetFiles())
             {
                 ImageList.Add(file.FullName);
-            }
-            foreach(var file in rootTop.GetFiles())
-            {
-                ImageListTop.Add(file.FullName);
             }
         }
         /// <summary>
@@ -99,13 +89,6 @@ namespace Personalblog.Services
 
             return (image, format);
         }
-
-        async Task<(Image, IImageFormat)> GenerateSizedImageAsyncOd(string imagePath)
-        {
-            await using var fileStream = new FileStream(imagePath, FileMode.Open);
-            var (image, format) = await Image.LoadWithFormatAsync(fileStream);
-            return (image, format);
-        }
         /// <summary>
         /// 从图片文件夹获取随机图片
         /// </summary>
@@ -118,20 +101,6 @@ namespace Personalblog.Services
             var rnd = seed == null ? _random : new Random(seed.GetHashCode());
             var imagePath = ImageList[rnd.Next(0, ImageList.Count)];
             return await GenerateSizedImageAsync(imagePath, width, height);
-        }
-        public async Task<(Image, IImageFormat)> GetRandomImageAsyncTop(string? seed = null)
-        {
-            var rnd = _random;
-            var imagePath = ImageListTop[rnd.Next(0, ImageListTop.Count)];
-            return await GenerateSizedImageAsyncOd(imagePath);
-        }
-
-        public async Task<string> GetQiliuImageAsyncTop()
-        {
-            var rnd = _random;
-            var imagePath = ImageListTop[rnd.Next(0, ImageListTop.Count)];
-            var fileName = Path.GetFileName(imagePath);
-            return Path.Combine("https://cdn.pljzy.top", "Top", fileName);
         }
     }
 }

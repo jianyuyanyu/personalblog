@@ -14,8 +14,6 @@ namespace Personalblog.Model.Entitys
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string PostId { get; set; }
-        
-        public int SortOrder { get; set; } 
         public Post Post { get; set; }
     }
 }
